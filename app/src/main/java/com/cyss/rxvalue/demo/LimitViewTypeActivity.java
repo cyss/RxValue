@@ -1,15 +1,20 @@
 package com.cyss.rxvalue.demo;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.cyss.rxvalue.CustomFillAction;
 import com.cyss.rxvalue.DateConfig;
+import com.cyss.rxvalue.IdName;
 import com.cyss.rxvalue.OnDataError;
 import com.cyss.rxvalue.OnFillError;
 import com.cyss.rxvalue.RxValue;
@@ -53,6 +58,7 @@ public class LimitViewTypeActivity extends AppCompatActivity implements View.OnC
         rxValue.withPrefix("show_")
                 .viewType(TextView.class) // only set TextView
                 .fillView(this);
+
     }
 
     @Override
