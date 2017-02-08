@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">RxValueDemo</string>
+    <string name="simple_use">Simple Use</string>
+    <string name="prefix_or_suffix">Prefix Or Suffix</string>
+    <string name="limit_view_type">Limit View Type</string>
+    <string name="fill_view_holder">Fill View Holder</string>
+    <string name="convert_key">Convert Field Name</string>
+    <string name="multiple_layout">One Field Use In Multiple Layout</string>
+    <string name="load_image_with_glide">Load Image With Glide</string>
+    <string name="custom_view_type">About Custom View Type</string>
+
+    <string name="person_name">Input Person Name</string>
+    <string name="person_age">Input Person Age</string>
+    <string name="person_birthday">Input Person Birthday(yyyyMMdd)</string>
+    <string name="show_result">Show Result</string>
+
+</resources>
