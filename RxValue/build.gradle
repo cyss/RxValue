@@ -1,4 +1,8 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group = 'com.github.cyss'
 
 android {
     compileSdkVersion 24
@@ -26,3 +30,5 @@ dependencies {
     compile 'io.reactivex:rxandroid:1.2.+'
     compile 'io.reactivex:rxjava:1.2.+'
 }
+
+
