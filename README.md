@@ -21,7 +21,7 @@ RxValue.<Person>create(context).withFillObj(person).fillView(viewHolder);
 //if you want to pass parameters to person just
 RxValue.<Person>create(context).withFillObj(person).getData(view);
 ```
-# Install
+## Install
 Add it in your root build.gradle at the end of repositories:
 ```
 allprojects {
@@ -39,7 +39,7 @@ compile 'io.reactivex:rxjava:1.2.+'
 //rxvalue
 compile 'com.github.cyss:RxValue:1.0.1'
 ```
-# Use RxValue  
+## Use RxValue  
 XML Layout  activiy_simple.xml
 ```xml
 <EditText
@@ -82,7 +82,7 @@ person.setAge(20);
 rxJava.fillView(this);//It's a surprise
 ```
 Note: In default mode xml view's id must same as class field name.
-# Convert Field Key  
+## Convert Field Key  
 if we have a xml layout named activiy_convert.xml like this.
 ```xml
 <EditText
@@ -97,15 +97,15 @@ if we have a xml layout named activiy_convert.xml like this.
   android:inputType="number"
   android:text="30" />
 ```
-we need set convert config
-1. the first way  
+we need set convert config  
+the first way  
 ```java
 RxValue<Person> rxJava = RxValue.<Person>create(context)
   .withPrefix("p_")
   .withSuffix("_s")
   .withFillObj(person);
 ```
-2. or you can do this  
+or you can do this  
 Person.java
 ```java
 @IdName(value = {R.id.name, R.id.p_name_s}, layout = {R.layout.activity_simple, R.layout.activity_convert})
@@ -121,14 +121,14 @@ rxjava.layoutId(R.layout.activity_simple).fillView(this);
 //fill in activiy_convert.xml
 rxjava.layoutId(R.layout.activiy_convert).fillView(this);
 ```
-# About Date
+## About Date
 just use annotation @DateConfig
 ```java
 @DateConfig("yyyyMMdd")
 private Date birthday;
 //get and set method
 ```
-# Load Image
+## Load Image
 How to fill a url to ImageView? If you use Glide to load image.
 ```java
 RxValue.create(context).
@@ -163,7 +163,7 @@ RxValue.registerGlobalAction(ImageView.class, new CustomFillAction<ImageView>() 
 ```
 Note: If you config global action with ImageView well, and also config when fillView/getData. the later will work.
 
-# Custom View
+## Custom View
 If you know load Image in ImageView, I think you will know how to do with your custom view.  
 ```java
 @Override
@@ -173,10 +173,10 @@ public Object action2(Context context, ImageView view) {
 ```
 this is use with getData(view).
 
-# About View holder
+## About View holder
 just use fillView(viewHolder), don't use fillView(viewHolder.itemView).
 
-# Handle Error or Complete
+## Handle Error or Complete
 For now fillView and getData is sync.
 ```java
 //handle error
@@ -191,20 +191,20 @@ rxJava...
   .fillView..
 ```
 
-# Now Support View Type
+## Now Support View Type
 1. EditText
 2. TextView
 3. Button
 4. Continue...
 
-# Next Move
+## Next Move
 1. Suport ListView or RecyclerView
 2. Data Validate when getData
 3. Data Binding?
 4. fix bug.
 
-# Finally
+## Finally
 Just have fun :)
 
-# License
+## License
 [http://www.apache.org/licenses/LICENSE-2.0.txt](http://www.apache.org/licenses/LICENSE-2.0.txt)
