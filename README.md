@@ -1,5 +1,5 @@
 # RxValue
-It's the easiest way to set value to view with RxJava  
+It's the easiest way to set value to view with [RxJava](https://github.com/ReactiveX/RxJava)
 
 ~~TextView tv1 = findViewById(...)~~  
 ~~TextView tv2 = findViewById(...)~~  
@@ -33,6 +33,10 @@ allprojects {
 ```
  Add the dependency
 ```
+//depend on rxjava
+compile 'io.reactivex:rxandroid:1.2.+'
+compile 'io.reactivex:rxjava:1.2.+'
+//rxvalue
 compile 'com.github.cyss:RxValue:1.0.1'
 ```
 # Use RxValue  
