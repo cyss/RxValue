@@ -122,7 +122,7 @@ just use annotation @DateConfig
 ```java
 @DateConfig("yyyyMMdd")
 private Date birthday;
-//get set metod
+//get and set method
 ```
 # Load Image
 How to fill a url to ImageView? If you use Glide to load image.
@@ -157,7 +157,7 @@ RxValue.registerGlobalAction(ImageView.class, new CustomFillAction<ImageView>() 
   }
 });
 ```
-Note: If you config global action with ImageView, and also config when fillView/getData. the later will work.
+Note: If you config global action with ImageView well, and also config when fillView/getData. the later will work.
 
 # Custom View
 If you know load Image in ImageView, I think you will know how to do with your custom view.  
