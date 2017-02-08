@@ -190,6 +190,13 @@ rxJava...
   .withFillComplete(...)
   .fillView..
 ```
+
+# Now Support View Type
+1. EditText
+2. TextView
+3. Button
+4. Continue...
+
 # Next Move
 1. Suport ListView or RecyclerView
 2. Data Validate when getData
