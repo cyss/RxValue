@@ -6,7 +6,7 @@ It's the easiest way to set value to view with [RxJava](https://github.com/React
 ...  
 ~~EditText et1 = findViewById(...)~~  
 ~~EditText et2 = findViewById(...)~~  
-...
+...  
 ~~tv1.setText(...)~~  
 ~~tv2.setText(...)~~  
 ...  
@@ -120,6 +120,14 @@ RxValue<Person> rxJava = RxValue.<Person>create(context).withFillObj(person);
 rxjava.layoutId(R.layout.activity_simple).fillView(this);
 //fill in activiy_convert.xml
 rxjava.layoutId(R.layout.activiy_convert).fillView(this);
+```
+## Limit View Type
+Sometimes we just need get/set EditText value
+```java
+rxjava
+  .viewType(EditText.class)
+//.viewType(TextView.class) limit view
+  .fillView(this);
 ```
 ## About Date
 just use annotation @DateConfig
