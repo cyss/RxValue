@@ -191,7 +191,7 @@ rxJava...
 2. Data Validate when getData
 3. Data Binding?
 4. fix bug.
-5.
+
 # Finally
 Just have fun :)
 
