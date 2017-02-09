@@ -169,10 +169,10 @@ RxValue.registerGlobalAction(ImageView.class, new CustomFillAction<ImageView>() 
   }
 });
 ```
-Note: If you config global action with ImageView well, and also config when fillView/getData. the later will work.
+Note: If you config global action with ImageView, and also config when fillView/getData. the later will work.
 
 ## Custom View
-If you know load Image in ImageView, I think you will know how to do with your custom view.  
+If you know load Image in ImageView well, I think you will know how to do with your custom view.  
 ```java
 @Override
 public Object action2(Context context, ImageView view) {
