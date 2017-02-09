@@ -185,7 +185,7 @@ this is use with getData(view).
 just use fillView(viewHolder), don't use fillView(viewHolder.itemView).
 
 ## Handle Error or Complete
-For now fillView and getData is sync.
+If you are using a async method like fillViewAsync/getDateAsync, you need OnFillComplete/OnDataComplete.
 ```java
 //handle error
 rxJava...

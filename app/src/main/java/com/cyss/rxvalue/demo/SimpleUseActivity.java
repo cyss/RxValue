@@ -37,6 +37,8 @@ public class SimpleUseActivity extends AppCompatActivity implements View.OnClick
     @Override
     public void onClick(View view) {
         rxValue.withPrefix("").getData(this);
+        Log.d(this.getClass().getName(), "" + person);
+        Log.d(this.getClass().getName(), "================================");
         rxValue.withPrefix("show_").fillView(this);
     }
 

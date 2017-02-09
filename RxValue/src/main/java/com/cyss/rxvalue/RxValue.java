@@ -15,16 +15,22 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by chenyang on 2017/2/7.
@@ -60,6 +66,8 @@ public class RxValue<T> {
     private OnFillComplete fillComplete;
     private OnFillError fillError;
     private int layoutId = 1;
+    //view缓存，避免重复查找
+    private Map<View, Set<View>> viewCache = new HashMap<>();
 
     private RxValue(Context context){this.context = context;}
 
@@ -300,14 +308,26 @@ public class RxValue<T> {
      * @param activity 需要填充的activity
      */
     public void fillView(Activity activity) {
-        fillView(activity.getWindow().getDecorView());
+        fillView(activity.getWindow().getDecorView().findViewById(android.R.id.content));
     }
 
     /**
-     * 填充view数据
+     * 填充view数据, 同步操作
      * @param view 需要填充的view
      */
     public void fillView(View view) {
+        fillView(view, false);
+    }
+
+    /**
+     * 填充view数据, 异步操作
+     * @param view 需要填充的view
+     */
+    public void fillViewAsync(View view) {
+        fillView(view, true);
+    }
+
+    private void fillView(View view, boolean isAsync) {
         if(!checkInit()) {
             return;
         }
@@ -392,14 +412,25 @@ public class RxValue<T> {
      * @param activity 需要获取的activity
      */
     public void getData(Activity activity) {
-        getData(activity.getWindow().getDecorView());
+        getData(activity.getWindow().getDecorView().findViewById(android.R.id.content));
     }
 
     /**
-     * 获取数据
+     * 获取数据, 同步操作
      * @param view 需要获取view
      */
     public void getData(View view) {
+        getData(view, false);
+    }
+
+    /**
+     * 获取数据, 异步操作
+     * @param view 需要获取view
+     */
+    public void getDataAsync(View view) {
+        getData(view, true);
+    }
+    private void getData(View view, boolean isAsync) {
         if(!checkInit()) {
             return;
         }
@@ -461,19 +492,36 @@ public class RxValue<T> {
 
     /**
      * 检验是否填充或获取该view
-     * @param clazz
+     * @param v
      * @return
      */
-    private Boolean checkIsHandleView(Class<? extends View> clazz) {
+    private Boolean checkIsHandleView(View v) {
+        Class clazz = v.getClass();
+        boolean limitViewFlag = false;
+        boolean hasFieldFlag = false;
         if (fillViewType.isEmpty()) {
-            return true;
-        }
-        for (Class item : fillViewType) {
-            if (item.isAssignableFrom(clazz)) {
-                return true;
+            limitViewFlag = true;
+        } else {
+            for (Class item : fillViewType) {
+                if (item.isAssignableFrom(clazz)) {
+                    limitViewFlag = true;
+                    break;
+                }
             }
         }
-        return false;
+        String name = handleLayoutName(RxValue.getNameById(v.getId()));
+        if (name != null) {
+            if (objIdNameMap.containsKey(name)) {
+                hasFieldFlag = true;
+            } else {
+                try {
+                    fillObj.getClass().getDeclaredField(name);
+                    hasFieldFlag = true;
+                } catch (NoSuchFieldException e) {
+                }
+            }
+        }
+        return limitViewFlag && hasFieldFlag;
     }
 
     /**
@@ -485,21 +533,21 @@ public class RxValue<T> {
         if (fillObj != null && name != null && !"".equals(name)) {
             Object obj = getParamByName(name);
             if (obj != null) {
-                if (v instanceof TextView && checkIsHandleView(TextView.class)) {
+                if (v instanceof TextView) {
                     CustomFillAction action = getCustomFillAction(TextView.class);
                     if (action != null) {
                         action.action1(context, v, obj);
                     } else {
                         ((TextView) v).setText(obj.toString());
                     }
-                } else if (v instanceof Button && checkIsHandleView(Button.class)) {
+                } else if (v instanceof Button) {
                     CustomFillAction action = getCustomFillAction(Button.class);
                     if (action != null) {
                         action.action1(context, v, obj);
                     } else {
                         ((Button) v).setText(obj.toString());
                     }
-                } else if (v instanceof EditText && checkIsHandleView(EditText.class)) {
+                } else if (v instanceof EditText) {
                     CustomFillAction action = getCustomFillAction(EditText.class);
                     if (action != null) {
                         action.action1(context, v, obj);
@@ -529,11 +577,11 @@ public class RxValue<T> {
         }
         if (obj == null) {
             if (v != null) {
-                if (v instanceof TextView && checkIsHandleView(TextView.class)) {
+                if (v instanceof TextView) {
                     obj = ((TextView) v).getText();
-                } else if (v instanceof Button && checkIsHandleView(Button.class)) {
+                } else if (v instanceof Button) {
                     obj = ((Button) v).getTag();
-                } else if (v instanceof EditText && checkIsHandleView(EditText.class)) {
+                } else if (v instanceof EditText) {
                     obj = ((EditText) v).getText();
                 }
             }
@@ -587,6 +635,30 @@ public class RxValue<T> {
      * @return
      */
     private Observable<View> findView(View v) {
+        return findView(v, false);
+    }
+
+    private Observable<View> findView(View v, boolean isAsync) {
+        Observable<View> observable = findAndCacheView(v)
+                .filter(new Func1<View, Boolean>() {
+                    @Override
+                    public Boolean call(View view) {
+                        return checkIsHandleView(view);
+                    }
+                });
+        if (isAsync) {
+            observable = observable.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread());
+        }
+        return observable;
+    }
+
+    private Observable<View> findAndCacheView(View v) {
+        if (viewCache.containsKey(v)) {
+            return Observable.from(viewCache.get(v));
+        }
+        final Set<View> cacheViewList = new HashSet<>();
+        viewCache.put(v, cacheViewList);
         if (v instanceof ViewGroup) {
             final ViewGroup vp = (ViewGroup) v;
             return Observable.range(0, vp.getChildCount())
@@ -594,7 +666,7 @@ public class RxValue<T> {
                         @Override
                         public Boolean call(Integer i) {
                             View view = vp.getChildAt(i);
-                            return view instanceof ViewGroup || (view.getId() != -1 && view != null && checkIsHandleView(view.getClass()));
+                            return view instanceof ViewGroup || (view.getId() != -1 && view != null);
                         }
                     })
                     .flatMap(new Func1<Integer, Observable<View>>() {
@@ -602,10 +674,16 @@ public class RxValue<T> {
                         public Observable<View> call(Integer i) {
                             View view = vp.getChildAt(i);
                             if (view instanceof ViewGroup) {
-                                return Observable.just(view).concatWith(findView(view));
+                                Observable<View> childView = findAndCacheView(view);
+                                return Observable.from(new View[]{}).concatWith(childView);
                             } else {
                                 return Observable.just(view);
                             }
+                        }
+                    }).doOnNext(new Action1<View>() {
+                        @Override
+                        public void call(View view) {
+                            cacheViewList.add(view);
                         }
                     });
         } else {
@@ -652,6 +730,7 @@ public class RxValue<T> {
     }
 
     private String handleLayoutName(String name) {
+        if (name == null) return null;
         String fName = name;
         if (prefix != null && !"".equals(prefix.trim())){
             if (fName.startsWith(prefix)) {
