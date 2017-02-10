@@ -504,18 +504,23 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
                     String methodName = null;
                     if (objIdNameMap.containsKey(name)) {
                         String fName = objIdNameMap.get(name);
-                        methodName = toGetMethodName(fName);
+                        methodName = fName;
                     } else {
-                        methodName = toGetMethodName(name);
+                        methodName = name;
                     }
-                    Method method = fillObj.getClass().getMethod(methodName);
+                    Method method = null;
+                    try {
+                        method = fillObj.getClass().getMethod(toGetMethodName(methodName, false));
+                    } catch (NoSuchMethodException e) {
+                        method = fillObj.getClass().getMethod(toGetMethodName(methodName, true));
+                    }
                     obj = method.invoke(fillObj);
                     if (objDateMap.containsKey(name) && obj instanceof Date) {
                         String formatStr = objDateMap.get(name);
                         SimpleDateFormat sdf = new SimpleDateFormat(formatStr);
                         obj = sdf.format(obj);
                     }
-                } catch (NoSuchMethodException e){
+                } catch (NoSuchMethodException e) {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -644,8 +649,8 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
         return fName;
     }
 
-    private String toGetMethodName(String name) {
-        return "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
+    private String toGetMethodName(String name, boolean isBoolean) {
+        return (isBoolean ? "is" : "get") + name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 
     private String toSetMethodName(String name) {
