@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,8 +17,11 @@ import com.cyss.rxvalue.IdName;
 import com.cyss.rxvalue.OnDataError;
 import com.cyss.rxvalue.OnFillError;
 import com.cyss.rxvalue.RxValue;
+import com.cyss.rxvalue.RxValueBuilder;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by chenyang on 2017/2/8.
@@ -51,6 +53,17 @@ public class LimitViewTypeActivity extends AppCompatActivity implements View.OnC
         Log.d(this.getClass().getName(), "person:" + person);
         person = new Person();
         rxValue.withPrefix("")
+                .registerAction(ImageView.class, new CustomFillAction() {
+                    @Override
+                    public void action1(Context context, Object view, Object obj, RxValueBuilder builder) {
+
+                    }
+
+                    @Override
+                    public Object action2(Context context, Object view, RxValueBuilder builder) {
+                        return null;
+                    }
+                })
                 .withFillObj(person)
                 .viewType(EditText.class) // only get EditText, testLabel should be null
                 .getData(this);
@@ -58,7 +71,6 @@ public class LimitViewTypeActivity extends AppCompatActivity implements View.OnC
         rxValue.withPrefix("show_")
                 .viewType(TextView.class) // only set TextView
                 .fillView(this);
-
     }
 
     @Override

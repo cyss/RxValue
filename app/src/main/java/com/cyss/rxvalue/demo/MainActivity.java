@@ -3,6 +3,7 @@ package com.cyss.rxvalue.demo;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 intent = new Intent(this, LimitViewTypeActivity.class);
                 break;
             case R.id.fillViewHolder:
+                intent = new Intent(this, RecyclerViewActivity.class);
                 break;
             case R.id.convertKey:
                 break;

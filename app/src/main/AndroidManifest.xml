@@ -2,6 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.cyss.rxvalue.demo">
 
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".RxValueApplication"
         android:allowBackup="true"
@@ -18,6 +24,7 @@
         </activity>
         <activity android:name=".SimpleUseActivity"></activity>
         <activity android:name=".LimitViewTypeActivity"></activity>
+        <activity android:name=".RecyclerViewActivity"></activity>
     </application>
 
 </manifest>

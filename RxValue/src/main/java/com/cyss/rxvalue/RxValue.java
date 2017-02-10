@@ -10,12 +10,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.cyss.rxvalue.adapter.RVSimpleRecyclerViewAdapter;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +29,7 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -36,36 +40,11 @@ import rx.schedulers.Schedulers;
  * Created by chenyang on 2017/2/7.
  */
 
-public class RxValue<T> {
+public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
 
     private static final String LAYOUT_NAME = "layout";
     private static final String ID_NAME = "id";
 
-    private static Map<String, Integer> layoutMap;
-    private static Map<Integer, String> layoutResMap;
-    private static Map<String,Integer> idsMap;
-    private static Map<Integer, String> idsResMap;
-    private static Map<Class<? extends View>, CustomFillAction> globalCustomFillActionMap = new HashMap<>();
-
-    private Context context;
-    //填充的数据
-    private T fillObj;
-    //layout id前缀
-    private String prefix;
-    //layout id后缀
-    private String suffix;
-    //需要填充的set view集合，若为空则默认填充全部支持类型
-    private Set<Class<? extends View>> fillViewType = new HashSet<>();
-    //java bean 名称转换注解信息集合
-    private Map<String, String> objIdNameMap = new HashMap<>();
-    //java bean date转换注解信息集合
-    private Map<String, String> objDateMap = new HashMap<>();
-    private Map<Class<? extends View>, CustomFillAction> customFillActionMap = new HashMap<>();
-    private OnDataComplete<T> dataComplete;
-    private OnDataError dataError;
-    private OnFillComplete fillComplete;
-    private OnFillError fillError;
-    private int layoutId = 1;
     //view缓存，避免重复查找
     private Map<View, Set<View>> viewCache = new HashMap<>();
 
@@ -75,7 +54,8 @@ public class RxValue<T> {
         RxValue<T> rxValue = new RxValue<>(context);
         Map<Class<? extends View>, CustomFillAction> actions = new HashMap<>();
         actions.putAll(globalCustomFillActionMap);
-        return rxValue.registerActions(actions);
+        rxValue.registerActions(actions);
+        return rxValue;
     }
 
     public static Boolean init(Context context) {
@@ -129,19 +109,23 @@ public class RxValue<T> {
     }
 
     public static Integer getLayoutIdByName(String name) {
-        return layoutMap.get(name);
+        if (layoutMap != null) return layoutMap.get(name);
+        return null;
     }
 
     public static String getLayoutNameById(Integer id) {
-        return layoutResMap.get(id);
+        if (layoutResMap != null) return layoutResMap.get(id);
+        return null;
     }
 
     public static Integer getIdByName(String id) {
-        return idsMap.get(id);
+        if (idsMap != null) return idsMap.get(id);
+        return null;
     }
 
     public static String getNameById(Integer id) {
-        return idsResMap.get(id);
+        if (idsResMap != null) return idsResMap.get(id);
+        return null;
     }
 
     /**
@@ -149,10 +133,12 @@ public class RxValue<T> {
      * @param obj
      * @return
      */
+    @Override
     public RxValue<T> withFillObj(T obj) {
         if (obj == null) return this;
         this.fillObj = obj;
         if (!(obj instanceof Map)) {
+            objIdNameMap.clear();
             Observable.from(obj.getClass().getDeclaredFields())
                     .subscribe(new Action1<Field>() {
                         @Override
@@ -175,134 +161,6 @@ public class RxValue<T> {
     }
 
     /**
-     * 添加view id前缀
-     * @param prefix
-     * @return
-     */
-    public RxValue<T> withPrefix(String prefix) {
-        this.prefix = prefix;
-        return this;
-    }
-
-    /**
-     * 添加view id后缀
-     * @param suffix
-     * @return
-     */
-    public RxValue<T> withSuffix(String suffix) {
-        this.suffix = suffix;
-        return this;
-    }
-
-    /**
-     * 限制填充类型
-     * @param clazz 填充类型
-     * @return
-     */
-    public RxValue<T> viewType(Class<? extends View> clazz) {
-        fillViewType.add(clazz);
-        return this;
-    }
-
-    /**
-     * 限制填充类型
-     * @param viewSets 填充类型集合
-     * @return
-     */
-    public RxValue<T> viewSets(Set<Class<? extends View>> viewSets) {
-        fillViewType.addAll(viewSets);
-        return this;
-    }
-
-    public RxValue<T> clearViewType() {
-        fillViewType.clear();
-        return this;
-    }
-
-    /**
-     * 注册自定义填充行为
-     * @param clazz   填充view类型
-     * @param action  填充行为
-     * @return
-     */
-    public RxValue<T> registerAction(Class<? extends View> clazz, CustomFillAction action) {
-        customFillActionMap.put(clazz, action);
-        return this;
-    }
-
-    /**
-     * 注册自定义填充行为
-     * @param actions
-     * @return
-     */
-    public RxValue<T> registerActions(Map<Class<? extends View>, CustomFillAction> actions) {
-        customFillActionMap.putAll(actions);
-        return this;
-    }
-
-    /**
-     * 填充完成回调
-     * @param complete
-     * @return
-     */
-    public RxValue<T> withFillComplete(OnFillComplete complete) {
-        this.fillComplete = complete;
-        return this;
-    }
-
-    /**
-     * 获取数据完成回调
-     * @param complete
-     * @return
-     */
-    public RxValue<T> withDataComplete(OnDataComplete<T> complete) {
-        this.dataComplete = complete;
-        return this;
-    }
-
-    /**
-     * 填充错误回调
-     * @param error
-     * @return
-     */
-    public RxValue<T> withFillError(OnFillError error) {
-        this.fillError = error;
-        return this;
-    }
-
-    /**
-     * 填充错误回调
-     * @param error
-     * @return
-     */
-    public RxValue<T> withDataError(OnDataError error) {
-        this.dataError = error;
-        return this;
-    }
-
-    /**
-     * 添加需要转换的参数key，多用于fillObj为Map时。Java Bean可使用@IdName注解
-     * @param paramName   参数的名称
-     * @param layoutName  xml中id名称
-     * @return
-     */
-    public RxValue<T> convertKey(String paramName, String layoutName) {
-        objIdNameMap.put(layoutName, paramName);
-        return this;
-    }
-
-    /**
-     * 设置layout id
-     * @param layoutId
-     * @return
-     */
-    public RxValue<T> layoutId(int layoutId) {
-        this.layoutId = layoutId;
-        if (fillObj != null) withFillObj(fillObj);
-        return this;
-    }
-
-    /**
      * 该方法layout过于复杂时不建议直接使用。
      * 建议使用fillView(View view)
      * @param activity 需要填充的activity
@@ -321,8 +179,12 @@ public class RxValue<T> {
 
     /**
      * 填充view数据, 异步操作
-     * @param view 需要填充的view
+     * @param activity 需要填充的activity
      */
+    public void fillViewAsync(Activity activity) {
+        fillView(activity.getWindow().getDecorView().findViewById(android.R.id.content), true);
+    }
+
     public void fillViewAsync(View view) {
         fillView(view, true);
     }
@@ -407,6 +269,38 @@ public class RxValue<T> {
     }
 
     /**
+     * 填充List中的View, List中不会递归遍历子view
+     * @param views
+     */
+    public void fillView(Iterable<View> views) {
+        if(!checkInit()) {
+            return;
+        }
+        Observable.<View>from(views)
+                .subscribe(new Subscriber<View>() {
+                    @Override
+                    public void onCompleted() {
+                        if (fillComplete != null) fillComplete.complete();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        if (fillError != null) fillError.error(e);
+                    }
+
+                    @Override
+                    public void onNext(View v) {
+                        Integer id = v.getId();
+                        String name = RxValue.getNameById(id);
+                        if (name != null) {
+                            name = handleLayoutName(name);
+                            fillView(name, v);
+                        }
+                    }
+                });
+    }
+
+    /**
      * 该方法layout过于复杂时不建议直接使用。
      * 建议使用getData(View view)
      * @param activity 需要获取的activity
@@ -430,6 +324,7 @@ public class RxValue<T> {
     public void getDataAsync(View view) {
         getData(view, true);
     }
+
     private void getData(View view, boolean isAsync) {
         if(!checkInit()) {
             return;
@@ -536,28 +431,28 @@ public class RxValue<T> {
                 if (v instanceof TextView) {
                     CustomFillAction action = getCustomFillAction(TextView.class);
                     if (action != null) {
-                        action.action1(context, v, obj);
+                        action.action1(context, v, obj, this);
                     } else {
                         ((TextView) v).setText(obj.toString());
                     }
                 } else if (v instanceof Button) {
                     CustomFillAction action = getCustomFillAction(Button.class);
                     if (action != null) {
-                        action.action1(context, v, obj);
+                        action.action1(context, v, obj, this);
                     } else {
                         ((Button) v).setText(obj.toString());
                     }
                 } else if (v instanceof EditText) {
                     CustomFillAction action = getCustomFillAction(EditText.class);
                     if (action != null) {
-                        action.action1(context, v, obj);
+                        action.action1(context, v, obj, this);
                     } else {
                         ((EditText) v).setText(obj.toString());
                     }
                 } else {
                     CustomFillAction action = getCustomFillAction(v.getClass());
                     if (action != null) {
-                        action.action1(context, v, obj);
+                        action.action1(context, v, obj, this);
                     }
                 }
             }
@@ -573,7 +468,7 @@ public class RxValue<T> {
         Object obj = null;
         CustomFillAction action = getCustomFillAction(v.getClass());
         if (action != null) {
-            obj = action.action2(context, v);
+            obj = action.action2(context, v, this);
         }
         if (obj == null) {
             if (v != null) {
@@ -675,7 +570,7 @@ public class RxValue<T> {
                             View view = vp.getChildAt(i);
                             if (view instanceof ViewGroup) {
                                 Observable<View> childView = findAndCacheView(view);
-                                return Observable.from(new View[]{}).concatWith(childView);
+                                return Observable.just(view).concatWith(childView);
                             } else {
                                 return Observable.just(view);
                             }
@@ -781,6 +676,7 @@ public class RxValue<T> {
     }
 
     private Boolean checkInit() {
+        objIdNameMap.putAll(objIdNameTempMap);
         if(!init(context)) {
             Log.w(this.getClass().getName(), "RxValue init fail");
             return false;

@@ -17,7 +17,7 @@ public interface CustomFillAction<T> {
      * @param view 填充的view
      * @param obj  填充object
      */
-    public void action1(Context context, T view, Object obj);
+    public void action1(Context context, T view, Object obj, RxValueBuilder builder);
 
     /**
      * 获取view数据行为
@@ -25,5 +25,5 @@ public interface CustomFillAction<T> {
      * @param view  获取view
      * @return      返回从view获取的值
      */
-    public Object action2(Context context, T view);
+    public Object action2(Context context, T view, RxValueBuilder builder);
 }
