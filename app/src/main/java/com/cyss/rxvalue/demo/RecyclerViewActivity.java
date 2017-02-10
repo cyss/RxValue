@@ -53,7 +53,7 @@ public class RecyclerViewActivity extends Activity {
         for (int i = 0; i < 20; i++) {
             Student student = new Student();
             student.setAge(i);
-            student.setStudentName("小明~~" + i);
+            student.setStudentName("小明1~~" + i);
             Date day = new Date();
             day.setTime(day.getTime() - i * 24 * 3600 * 1000);
             student.setBirthday(day);
@@ -62,42 +62,47 @@ public class RecyclerViewActivity extends Activity {
         }
 
         //Fill this activity
-        rxValueList = RxValueList.create()
-                .withMode(RxValueList.MODE_SIMPLE)
-                .registerAction(TextView.class, new CustomFillAction<TextView>() {
-                    @Override
-                    public void action1(Context context, TextView view, Object obj, RxValueBuilder builder) {
-                        if (view.getId() == R.id.name) {
-                            view.setText(obj.toString() + ",改变一下");
-                        } else {
-                            view.setText(obj.toString());
-                        }
-                    }
-
-                    @Override
-                    public Object action2(Context context, TextView view, RxValueBuilder builder) {
-                        return view.getText();
-                    }
-                })
-                .itemClick(new RxValueList.OnItemClickListener<Student>() {
-                    @Override
-                    public void click(RecyclerView.Adapter adapter, RecyclerView.ViewHolder viewHolder, int position, Student obj) {
-                        Toast.makeText(RecyclerViewActivity.this, obj.getStudentName(), Toast.LENGTH_LONG).show();
-                    }
-                })
-                .addViewClick(R.id.avatarUrl, new RxValueList.OnViewClickListener<Student>() {
-                    @Override
-                    public void click(RecyclerView.Adapter adapter, RecyclerView.ViewHolder viewHolder, View view, Student obj) {
-                        Toast.makeText(RecyclerViewActivity.this, "点击了图片:" + obj.getStudentName(), Toast.LENGTH_LONG).show();
-                    }
-                })
-                .itemLayout(R.layout.list_item_student);
-        RxValue.<Classes>create(RecyclerViewActivity.this)
-                .withFillObj(classes)
-                .registerAction(RecyclerView.class, rxValueList)
-                .fillViewAsync(RecyclerViewActivity.this);
+//        rxValueList = RxValueList.create()
+//                .withMode(RxValueList.MODE_SIMPLE)
+//                .registerAction(TextView.class, new CustomFillAction<TextView>() {
+//                    @Override
+//                    public void action1(Context context, TextView view, Object obj, RxValueBuilder builder) {
+//                        if (view.getId() == R.id.name) {
+//                            view.setText(obj.toString() + ",改变一下");
+//                        } else {
+//                            view.setText(obj.toString());
+//                        }
+//                    }
+//
+//                    @Override
+//                    public Object action2(Context context, TextView view, RxValueBuilder builder) {
+//                        return view.getText();
+//                    }
+//                })
+//                .itemClick(new RxValueList.OnItemClickListener<Student>() {
+//                    @Override
+//                    public void click(RecyclerView.Adapter adapter, RecyclerView.ViewHolder viewHolder, int position, Student obj) {
+//                        Toast.makeText(RecyclerViewActivity.this, obj.getStudentName(), Toast.LENGTH_LONG).show();
+//                    }
+//                })
+//                .addViewClick(R.id.avatarUrl, new RxValueList.OnViewClickListener<Student>() {
+//                    @Override
+//                    public void click(RecyclerView.Adapter adapter, RecyclerView.ViewHolder viewHolder, View view, Student obj) {
+//                        Toast.makeText(RecyclerViewActivity.this, "点击了图片:" + obj.getStudentName(), Toast.LENGTH_LONG).show();
+//                    }
+//                })
+//                .itemLayout(R.layout.list_item_students);
+        RxValue rxValue = RxValue.<Classes>create(RecyclerViewActivity.this)
+                .withFillObj(classes);
+//                .registerAction(RecyclerView.class, rxValueList)
+        rxValue.fillViewAsync(RecyclerViewActivity.this);
+        rxValueList = (RxValueList) rxValue.getFillAction(RecyclerView.class);
+//        rxValueList.itemLayout(R.layout.activity_simple_use);   //try this
         adapter = (RVSimpleRecyclerViewAdapter<Student>) rxValueList.getAdapter();
         //delete first one
+        students.remove(0);
+        students.remove(0);
+        students.remove(0);
         students.remove(0);
         adapter.notifyDataSetChanged();
     }

@@ -240,6 +240,10 @@ public class RxValueBuilder<T, E extends RxValueBuilder> {
         return customFillActionMap;
     }
 
+    public CustomFillAction getFillAction(Class<? extends View> clazz) {
+        return customFillActionMap.get(clazz);
+    }
+
     public int getLayoutId() {
         return layoutId;
     }

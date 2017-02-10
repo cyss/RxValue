@@ -108,23 +108,23 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
         }
     }
 
-    public static Integer getLayoutIdByName(String name) {
-        if (layoutMap != null) return layoutMap.get(name);
-        return null;
+    public static int getLayoutIdByName(String name) {
+        if (layoutMap != null && layoutMap.containsKey(name)) return layoutMap.get(name);
+        return -1;
     }
 
     public static String getLayoutNameById(Integer id) {
-        if (layoutResMap != null) return layoutResMap.get(id);
+        if (layoutResMap != null && layoutResMap.containsKey(id)) return layoutResMap.get(id);
         return null;
     }
 
-    public static Integer getIdByName(String id) {
-        if (idsMap != null) return idsMap.get(id);
-        return null;
+    public static int getIdByName(String name) {
+        if (idsMap != null && idsMap.containsKey(name)) return idsMap.get(name);
+        return -1;
     }
 
     public static String getNameById(Integer id) {
-        if (idsResMap != null) return idsResMap.get(id);
+        if (idsResMap != null && idsResMap.containsKey(id)) return idsResMap.get(id);
         return null;
     }
 

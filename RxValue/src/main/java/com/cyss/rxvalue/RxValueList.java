@@ -25,14 +25,18 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
     public static final int MODE_SIMPLE = 100;
     public static final int MODE_MULTIPLE = 101;
     public static final int MODE_CUSTOM = 102;
+    public static final int DEFAULT_ITEM_LAYOUT = -1991;
 
-    private List<Integer> itemLayouts = new ArrayList<>();
+    private Map<Integer, Integer> itemLayouts = new HashMap<>();
     private int mode = MODE_CUSTOM;
     private OnItemClickListener itemClick;
     private Map<Integer, OnViewClickListener> viewClickMap = new HashMap<>();
     private RecyclerView.Adapter adapter;
     private OnFillItemViewListener beforeFillView;
     private OnFillItemViewListener afterFillView;
+    private int listId = -1;
+    private OnViewTypeListener viewTypeListener;
+    private Map<Integer, Integer> appendCountMap = new HashMap<>();
 
     private RxValueList() {}
 
@@ -42,12 +46,32 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
     }
 
     public RxValueList itemLayout(int layoutId) {
-        this.itemLayouts.add(layoutId);
+        this.itemLayouts.put(DEFAULT_ITEM_LAYOUT, layoutId);
+        return this;
+    }
+
+    public RxValueList itemLayout(int viewType, int layoutId) {
+        this.itemLayouts.put(viewType, layoutId);
         return this;
     }
 
     public RxValueList itemClick(OnItemClickListener clickListener) {
         this.itemClick = clickListener;
+        return this;
+    }
+
+    public RxValueList addAppendCount(int startIndex, int count) {
+        appendCountMap.put(startIndex, count);
+        return this;
+    }
+
+    public RxValueList removeAppendCount(int startIndex) {
+        appendCountMap.remove(startIndex);
+        return this;
+    }
+
+    public RxValueList clearAppendCount() {
+        appendCountMap.clear();
         return this;
     }
 
@@ -66,6 +90,11 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
         return this;
     }
 
+    public RxValueList viewTypeSetting(OnViewTypeListener viewTypeListener) {
+        this.viewTypeListener = viewTypeListener;
+        return this;
+    }
+
     public RxValueList withBeforeFillItemView(OnFillItemViewListener fillItemViewListener) {
         this.beforeFillView = fillItemViewListener;
         return this;
@@ -80,7 +109,7 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
      * 获取设置每一项xml layout的id
      * @return
      */
-    public List<Integer> getItemLayouts() {
+    public Map<Integer, Integer> getItemLayouts() {
         return itemLayouts;
     }
 
@@ -108,19 +137,42 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
         return afterFillView;
     }
 
+    public int getListId() {
+        return listId;
+    }
+
+    public OnViewTypeListener getViewTypeListener() {
+        return viewTypeListener;
+    }
+
+    public Map<Integer, Integer> getAppendCountMap() {
+        return appendCountMap;
+    }
+
+    public int getDefaultListItemId() {
+        String name = RxValue.getNameById(this.listId);
+        if (name == null) return -1;
+        String layoutName = "list_item_" + name;
+        Log.i(getClass().getName(), "====>RxValue info:default item layout '" + layoutName + ".xml'" );
+        return RxValue.getLayoutIdByName(layoutName);
+    }
+
     @Override
     public void action1(Context context, RecyclerView view, Object obj, RxValueBuilder builder) {
-        if (mode == MODE_SIMPLE) {
+        this.listId = view.getId();
+        if (mode == MODE_SIMPLE || mode == MODE_MULTIPLE) {
             if (obj instanceof List) {
-                if (adapter == null) {
-                    adapter = new RVSimpleRecyclerViewAdapter(context, itemLayouts.get(itemLayouts.size() - 1), (List)obj);
+                if (!itemLayouts.isEmpty() && !itemLayouts.containsKey(DEFAULT_ITEM_LAYOUT) && viewTypeListener == null) {
+                    throw new RuntimeException("You need call viewTypeSetting() to setting.");
                 }
-                RVSimpleRecyclerViewAdapter rxAdapter = (RVSimpleRecyclerViewAdapter) adapter;
-                rxAdapter.setRxValueList(this);
-                view.setAdapter(rxAdapter);
+                adapter = new RVSimpleRecyclerViewAdapter(context, itemLayouts, (List)obj);
+                ((RVSimpleRecyclerViewAdapter)adapter).setRxValueList(this);
+                view.setAdapter(adapter);
             }
-        } if (adapter != null) {
-            view.setAdapter(adapter);
+        } else if (mode == MODE_CUSTOM) {
+            if (adapter != null) {
+                view.setAdapter(adapter);
+            }
         }
     }
 
@@ -145,5 +197,9 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
 
     public interface OnViewClickListener<T> {
         public void click(RecyclerView.Adapter adapter, RecyclerView.ViewHolder viewHolder, View view, T obj);
+    }
+
+    public interface OnViewTypeListener<T> {
+        public int viewType(int position, T obj);
     }
 }

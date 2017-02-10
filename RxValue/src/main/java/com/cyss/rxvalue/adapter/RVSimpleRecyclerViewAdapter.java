@@ -2,16 +2,13 @@ package com.cyss.rxvalue.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 
 import com.cyss.rxvalue.RxValue;
 import com.cyss.rxvalue.RxValueList;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,16 +23,37 @@ import rx.functions.Func1;
 
 public class RVSimpleRecyclerViewAdapter<T> extends RVBaseRecyclerViewAdapter<T, RVSimpleRecyclerViewAdapter.RVSimpleViewHolder> {
 
-    private int itemLayout;
+    private Map<Integer, Integer> itemLayout;
+    private int defaultItemLayoutId = -1;
 
-    public RVSimpleRecyclerViewAdapter(Context context, int itemLayout, List<T> dataSource) {
+    public RVSimpleRecyclerViewAdapter(Context context, Map<Integer, Integer> itemLayout, List<T> dataSource) {
         super(context, dataSource);
         this.itemLayout = itemLayout;
     }
 
+    public RVSimpleRecyclerViewAdapter(Context context, List<T> dataSource) {
+        super(context, dataSource);
+    }
+
     @Override
     public RVSimpleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(mContext).inflate(this.itemLayout, parent, false);
+        int itemLayoutId = -1;
+        if (rxValueList != null) {
+            if (itemLayout == null || itemLayout.isEmpty()) {
+                if (defaultItemLayoutId == -1) defaultItemLayoutId = rxValueList.getDefaultListItemId();
+                itemLayoutId = defaultItemLayoutId;
+            } else {
+                if (itemLayout.containsKey(viewType)) {
+                    itemLayoutId = itemLayout.get(viewType);
+                } else if (itemLayout.containsKey(RxValueList.DEFAULT_ITEM_LAYOUT)){
+                    itemLayoutId = itemLayout.get(RxValueList.DEFAULT_ITEM_LAYOUT);
+                }
+            }
+        }
+        if (itemLayoutId == -1) {
+            throw new RuntimeException("====>RxValue Error: can't find item layout");
+        }
+        View v = LayoutInflater.from(mContext).inflate(itemLayoutId, parent, false);
         RVSimpleRecyclerViewAdapter.RVSimpleViewHolder holder = new RVSimpleRecyclerViewAdapter.RVSimpleViewHolder(v);
         return holder;
     }
@@ -73,9 +91,45 @@ public class RVSimpleRecyclerViewAdapter<T> extends RVBaseRecyclerViewAdapter<T,
         }
     }
 
-    public class RVSimpleViewHolder extends RecyclerView.ViewHolder {
+    @Override
+    public int getItemViewType(int position) {
+        final T param = getDataSource().get(position);
+        if (rxValueList != null) {
+            RxValueList.OnViewTypeListener viewTypeListener = rxValueList.getViewTypeListener();
+            if (viewTypeListener != null) return viewTypeListener.viewType(position, param);
+        }
+        return super.getItemViewType(position);
+    }
 
-//        public List<View> holderViews = new ArrayList<>();
+    @Override
+    public int getItemCount() {
+//        Map<Integer, Integer> appendCountMap = rxValueList.getAppendCountMap();
+//        if (rxValueList != null && !appendCountMap.isEmpty()) {
+//            int appendCount = 0;
+//            for (Integer count: appendCountMap.values()) {
+//                appendCount += count;
+//            }
+//            return super.getItemCount() + appendCount;
+//        }
+        return super.getItemCount();
+    }
+
+//    private T getData(int position) {
+//        if (rxValueList != null) {
+//            Map<Integer, Integer> appendCountMap = rxValueList.getAppendCountMap();
+//            if (!appendCountMap.isEmpty()) {
+//                for (Map.Entry<Integer, Integer> item: appendCountMap.entrySet()) {
+//                    int startIndex = item.getKey();
+//                    if (position > startIndex && position <= startIndex + item.getValue()) {
+//                        return null;
+//                    }
+//                }
+//            }
+//        }
+//        return getDataSource().get(position);
+//    }
+
+    public class RVSimpleViewHolder extends RecyclerView.ViewHolder {
         public Map<Integer, View> holderViews = new HashMap<>();
         public RxValue<T> rxValue;
 
