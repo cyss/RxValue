@@ -6,10 +6,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
-import com.cyss.rxvalue.OnDataError;
-import com.cyss.rxvalue.OnFillError;
+import com.cyss.rxvalue.listener.OnDataError;
+import com.cyss.rxvalue.listener.OnFillError;
 import com.cyss.rxvalue.RxValue;
 import com.cyss.rxvalue.demo.model.PersonInSimpleUse;
 

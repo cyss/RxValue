@@ -15,10 +15,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Re-Fill View "/>
-    <android.support.v7.widget.RecyclerView
+    <ListView
         android:id="@+id/students"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </android.support.v7.widget.RecyclerView>
-
+        android:layout_height="match_parent"></ListView>
 </LinearLayout>

@@ -1,7 +1,6 @@
 package com.cyss.rxvalue.demo.model;
 
-import com.cyss.rxvalue.DateConfig;
-import com.cyss.rxvalue.IdName;
+import com.cyss.rxvalue.annotation.DateConfig;
 
 import java.util.Date;
 

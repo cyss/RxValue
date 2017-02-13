@@ -4,8 +4,13 @@ import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
+import com.cyss.rxvalue.adapter.RVSimpleListViewAdapter;
 import com.cyss.rxvalue.adapter.RVSimpleRecyclerViewAdapter;
 
 import java.util.ArrayList;
@@ -20,7 +25,7 @@ import java.util.TreeSet;
  * Created by chenyang on 2017/2/8.
  */
 
-public class RxValueList extends RxValueBuilder<List, RxValueList> implements CustomFillAction<RecyclerView> {
+public class RxValueList extends RxValueBuilder<List, RxValueList> implements CustomFillAction<ViewGroup> {
 
     public static final int MODE_SIMPLE = 100;
     public static final int MODE_MULTIPLE = 101;
@@ -32,6 +37,7 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
     private OnItemClickListener itemClick;
     private Map<Integer, OnViewClickListener> viewClickMap = new HashMap<>();
     private RecyclerView.Adapter adapter;
+    private BaseAdapter listViewAdapter;
     private OnFillItemViewListener beforeFillView;
     private OnFillItemViewListener afterFillView;
     private int listId = -1;
@@ -90,6 +96,11 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
         return this;
     }
 
+    public RxValueList withAdapter(BaseAdapter adapter) {
+        this.listViewAdapter = adapter;
+        return this;
+    }
+
     public RxValueList viewTypeSetting(OnViewTypeListener viewTypeListener) {
         this.viewTypeListener = viewTypeListener;
         return this;
@@ -125,8 +136,12 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
         return viewClickMap;
     }
 
-    public RecyclerView.Adapter getAdapter() {
+    public RecyclerView.Adapter getRecyclerViewAdapter() {
         return adapter;
+    }
+
+    public BaseAdapter getListViewAdapter() {
+        return listViewAdapter;
     }
 
     public OnFillItemViewListener getBeforeFillView() {
@@ -158,31 +173,55 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
     }
 
     @Override
-    public void action1(Context context, RecyclerView view, Object obj, RxValueBuilder builder) {
+    public void action1(Context context, ViewGroup view, Object obj, RxValueBuilder builder) {
         this.listId = view.getId();
-        if (mode == MODE_SIMPLE || mode == MODE_MULTIPLE) {
-            if (obj instanceof List) {
-                if (!itemLayouts.isEmpty() && !itemLayouts.containsKey(DEFAULT_ITEM_LAYOUT) && viewTypeListener == null) {
-                    throw new RuntimeException("You need call viewTypeSetting() to setting.");
+        if (view instanceof RecyclerView) {
+            RecyclerView recyclerView = (RecyclerView) view;
+            if (mode == MODE_SIMPLE || mode == MODE_MULTIPLE) {
+                if (obj instanceof List) {
+                    if (!itemLayouts.isEmpty() && !itemLayouts.containsKey(DEFAULT_ITEM_LAYOUT) && viewTypeListener == null) {
+                        throw new RuntimeException("You need call viewTypeSetting() to setting.");
+                    }
+                    adapter = new RVSimpleRecyclerViewAdapter(context, RxValueList.this, (List)obj);
+                    recyclerView.setAdapter(adapter);
                 }
-                adapter = new RVSimpleRecyclerViewAdapter(context, itemLayouts, (List)obj);
-                ((RVSimpleRecyclerViewAdapter)adapter).setRxValueList(this);
-                view.setAdapter(adapter);
+            } else if (mode == MODE_CUSTOM) {
+                if (adapter != null) {
+                    recyclerView.setAdapter(adapter);
+                }
             }
-        } else if (mode == MODE_CUSTOM) {
-            if (adapter != null) {
-                view.setAdapter(adapter);
+        } else if (view instanceof ListView) {
+            ListView listView = (ListView) view;
+            if (mode == MODE_SIMPLE || mode == MODE_MULTIPLE) {
+                if (obj instanceof List) {
+                    if (!itemLayouts.isEmpty() && !itemLayouts.containsKey(DEFAULT_ITEM_LAYOUT) && viewTypeListener == null) {
+                        throw new RuntimeException("You need call viewTypeSetting() to setting.");
+                    }
+                    listViewAdapter = new RVSimpleListViewAdapter(context, RxValueList.this, (List)obj);
+                    listView.setAdapter(listViewAdapter);
+                }
+            } else if (mode == MODE_CUSTOM) {
+                if (adapter != null) {
+                    listView.setAdapter(listViewAdapter);
+                }
             }
         }
     }
 
     @Override
-    public Object action2(Context context, RecyclerView view, RxValueBuilder builder) {
-        RecyclerView.Adapter adapter = view.getAdapter();
-        if (adapter instanceof RVSimpleRecyclerViewAdapter) {
-            return ((RVSimpleRecyclerViewAdapter) adapter).getDataSource();
-        } else {
-
+    public Object action2(Context context, ViewGroup view, RxValueBuilder builder) {
+        if (view instanceof RecyclerView) {
+            RecyclerView recyclerView = (RecyclerView) view;
+            RecyclerView.Adapter adapter = recyclerView.getAdapter();
+            if (adapter instanceof RVSimpleRecyclerViewAdapter) {
+                return ((RVSimpleRecyclerViewAdapter) adapter).getDataSource();
+            }
+        } else if (view instanceof ListView) {
+            ListView listView = (ListView) view;
+            ListAdapter adapter = listView.getAdapter();
+            if (adapter instanceof RVSimpleListViewAdapter) {
+                return ((RVSimpleListViewAdapter) adapter).getDataSource();
+            }
         }
         return null;
     }
@@ -192,11 +231,11 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
     }
 
     public interface OnItemClickListener<T> {
-        public void click(RecyclerView.Adapter adapter, RecyclerView.ViewHolder viewHolder, int position, T obj);
+        public void click(RecyclerView.ViewHolder viewHolder, int position, T obj);
     }
 
     public interface OnViewClickListener<T> {
-        public void click(RecyclerView.Adapter adapter, RecyclerView.ViewHolder viewHolder, View view, T obj);
+        public void click(RecyclerView.ViewHolder viewHolder, View view, T obj);
     }
 
     public interface OnViewTypeListener<T> {

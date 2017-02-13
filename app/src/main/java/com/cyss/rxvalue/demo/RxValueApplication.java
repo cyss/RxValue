@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +39,8 @@ public class RxValueApplication extends Application {
             }
         });
         RxValue.registerGlobalAction(RecyclerView.class, RxValueList.create()
+                .withMode(RxValueList.MODE_SIMPLE));
+        RxValue.registerGlobalAction(ListView.class, RxValueList.create()
                 .withMode(RxValueList.MODE_SIMPLE));
     }
 }

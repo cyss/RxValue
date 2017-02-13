@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 intent = new Intent(this, RecyclerViewActivity.class);
                 break;
             case R.id.convertKey:
+                intent = new Intent(this, ListViewActivity.class);
                 break;
             case R.id.multipleLayout:
                 break;

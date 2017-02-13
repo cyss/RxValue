@@ -10,23 +10,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.cyss.rxvalue.adapter.RVSimpleRecyclerViewAdapter;
+import com.cyss.rxvalue.annotation.DateConfig;
+import com.cyss.rxvalue.annotation.IdName;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -325,6 +321,85 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
         getData(view, true);
     }
 
+    /**
+     * 根据view集合获取数据
+     * @param views
+     */
+    public void getData(Iterable<View> views) {
+        if(!checkInit()) {
+            return;
+        }
+        Observable.from(views).subscribe(new Subscriber<View>() {
+            @Override
+            public void onCompleted() {
+                if (dataComplete != null) dataComplete.complete(fillObj);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                if (dataError != null) dataError.error(e);
+            }
+
+            @Override
+            public void onNext(View v) {
+                Integer id = v.getId();
+                String name = RxValue.getNameById(id);
+                getData(name, v);
+            }
+        });
+    }
+
+    /**
+     * 获取RecyclerView.ViewHolder中view的数据
+     * @param viewHolder
+     */
+    public void getData(RecyclerView.ViewHolder viewHolder) {
+        if (!checkInit()) {
+            return;
+        }
+        final RecyclerView.ViewHolder mViewHolder = viewHolder;
+        Field[] fields = viewHolder.getClass().getFields();
+        Observable.from(fields)
+                .filter(new Func1<Field, Boolean>() {
+                    @Override
+                    public Boolean call(Field field) {
+                        Object viewObj = null;
+                        try {
+                            viewObj = field.get(mViewHolder);
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                        return viewObj != null && viewObj instanceof View;
+                    }
+                })
+                .subscribe(new Action1<Field>() {
+                    @Override
+                    public void call(Field field) {
+                        try {
+                            Object viewObj = field.get(mViewHolder);
+                            String name = field.getName();
+                            IdName idName = field.getAnnotation(IdName.class);
+                            if (idName != null) {
+                                name = RxValue.getNameById(findIdNameByLayout(idName.value(), idName.layout()));
+                            }
+                            getData(name, (View) viewObj);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        if (fillError != null) fillError.error(throwable);
+                    }
+                }, new Action0() {
+                    @Override
+                    public void call() {
+                        if (fillComplete != null) fillComplete.complete();
+                    }
+                });
+    }
+
     private void getData(View view, boolean isAsync) {
         if(!checkInit()) {
             return;
@@ -339,38 +414,7 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
             public void call(View v) {
                 Integer id = v.getId();
                 String name = RxValue.getNameById(id);
-                name = handleLayoutName(name);
-                if (name != null) {
-                    Object param = getViewData(v);
-                    if (finalMap == null) {
-                        if (param != null) {
-                            String methodName = null;
-                            if (objIdNameMap.containsKey(name)) {
-                                name = objIdNameMap.get(name);
-                            }
-                            if (objDateMap.containsKey(name)) {
-                                String formatStr = objDateMap.get(name);
-                                SimpleDateFormat sdf = new SimpleDateFormat(formatStr);
-                                try {
-                                    param = sdf.parse(param.toString());
-                                } catch (ParseException e) {
-                                    Log.w(this.getClass().getName(), "RxValue Warn:" + name + ":" + param + " can't date format use '" + formatStr + "'");
-                                }
-                            }
-                            methodName = toSetMethodName(name);
-                            try {
-                                invokeSetMethod(fillObj, findMethod(methodName, fillObj.getClass().getDeclaredMethods()), param);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    } else {
-                        if (objIdNameMap.containsKey(name)) {
-                            name = objIdNameMap.get(name);
-                        }
-                        if (param != null) finalMap.put(name, param);
-                    }
-                }
+                getData(name, v);
             }
         }, new Action1<Throwable>() {
             @Override
@@ -384,6 +428,8 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
             }
         });
     }
+
+
 
     /**
      * 检验是否填充或获取该view
@@ -459,6 +505,44 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
         }
     }
 
+    private void getData(String pname, View v) {
+        Map map = null;
+        if (fillObj instanceof Map) {
+            map = (Map) fillObj;
+        }
+        String name = handleLayoutName(pname);
+        if (name != null) {
+            Object param = getViewData(v);
+            if (map == null) {
+                if (param != null) {
+                    String methodName = null;
+                    if (objIdNameMap.containsKey(name)) {
+                        name = objIdNameMap.get(name);
+                    }
+                    if (objDateMap.containsKey(name)) {
+                        String formatStr = objDateMap.get(name);
+                        SimpleDateFormat sdf = new SimpleDateFormat(formatStr);
+                        try {
+                            param = sdf.parse(param.toString());
+                        } catch (ParseException e) {
+                            Log.w(this.getClass().getName(), "RxValue Warn:" + name + ":" + param + " can't date format use '" + formatStr + "'");
+                        }
+                    }
+                    methodName = toSetMethodName(name);
+                    try {
+                        invokeSetMethod(fillObj, findMethod(methodName, fillObj.getClass().getDeclaredMethods()), param);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                if (objIdNameMap.containsKey(name)) {
+                    name = objIdNameMap.get(name);
+                }
+                if (param != null) map.put(name, param);
+            }
+        }
+    }
     /**
      * 获取view数据
      * @param v

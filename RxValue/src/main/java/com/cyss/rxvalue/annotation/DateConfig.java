@@ -1,4 +1,4 @@
-package com.cyss.rxvalue;
+package com.cyss.rxvalue.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;

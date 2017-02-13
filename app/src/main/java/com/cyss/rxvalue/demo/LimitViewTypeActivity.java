@@ -12,16 +12,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cyss.rxvalue.CustomFillAction;
-import com.cyss.rxvalue.DateConfig;
-import com.cyss.rxvalue.IdName;
-import com.cyss.rxvalue.OnDataError;
-import com.cyss.rxvalue.OnFillError;
+import com.cyss.rxvalue.annotation.DateConfig;
+import com.cyss.rxvalue.listener.OnDataError;
+import com.cyss.rxvalue.listener.OnFillError;
 import com.cyss.rxvalue.RxValue;
 import com.cyss.rxvalue.RxValueBuilder;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by chenyang on 2017/2/8.

@@ -3,14 +3,15 @@ package com.cyss.rxvalue;
 import android.content.Context;
 import android.view.View;
 
-import java.lang.reflect.Field;
+import com.cyss.rxvalue.listener.OnDataComplete;
+import com.cyss.rxvalue.listener.OnDataError;
+import com.cyss.rxvalue.listener.OnFillComplete;
+import com.cyss.rxvalue.listener.OnFillError;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import rx.Observable;
-import rx.functions.Action1;
 
 /**
  * Created by chenyang on 2017/2/10.

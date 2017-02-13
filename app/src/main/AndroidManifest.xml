@@ -25,6 +25,7 @@
         <activity android:name=".SimpleUseActivity"></activity>
         <activity android:name=".LimitViewTypeActivity"></activity>
         <activity android:name=".RecyclerViewActivity"></activity>
+        <activity android:name=".ListViewActivity"></activity>
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.cyss.rxvalue;
+package com.cyss.rxvalue.listener;
 
 /**
  * Created by chenyang on 2017/2/7.
