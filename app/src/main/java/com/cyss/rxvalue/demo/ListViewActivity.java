@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.BaseAdapter;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import com.cyss.rxvalue.RxValue;
@@ -14,7 +16,10 @@ import com.cyss.rxvalue.demo.R;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by chenyang on 2017/2/13.
@@ -22,8 +27,8 @@ import java.util.List;
 
 public class ListViewActivity extends Activity {
 
-    RecyclerViewActivity.Classes classes = new RecyclerViewActivity.Classes();
-    RxValue<RecyclerViewActivity.Classes> rxValue;
+    Map<String, Object> classes = new HashMap<>();
+    RxValue<Map<String, Object>> rxValue;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,15 +36,11 @@ public class ListViewActivity extends Activity {
 
         initData();
 
-        rxValue = RxValue.<RecyclerViewActivity.Classes>create(this)
+        rxValue = RxValue.<Map<String, Object>>create(this)
+                .convertKey("teacherCount", "teacherNumber")
                 .withFillObj(classes);
-
-        classes.getStudents().remove(0);
-        classes.getStudents().remove(0);
-        classes.getStudents().remove(0);
-        classes.getStudents().remove(0);
-
         rxValue.fillViewAsync(this);
+
         RxValueList rxValueList = (RxValueList) rxValue.getFillAction(ListView.class);
         rxValueList.addViewClick(R.id.save, new RxValueList.OnViewClickListener() {
             @Override
@@ -49,16 +50,19 @@ public class ListViewActivity extends Activity {
                 Log.d(getClass().getName(), "=-=-=-=>" + obj);
             }
         });
-        rxValueList.getListViewAdapter().notifyDataSetChanged();
+        BaseAdapter adapter = rxValueList.getListViewAdapter();
+        adapter.notifyDataSetChanged();
     }
 
     private void initData() {
         //init data
-        classes.setClassName("Class Two Grade Three for ListView");
-        classes.setTeacherNumber(12);
+//        classes.setClassName("Class Two Grade Three for ListView");
+//        classes.setTeacherNumber(12);
+        classes.put("className", "Class Two Grade Three for ListView");
+        classes.put("teacherCount", 2);
 
         List<RecyclerViewActivity.Student> students = new ArrayList<>();
-        classes.setStudents(students);
+        classes.put("students", students);
         for (int i = 0; i < 20; i++) {
             RecyclerViewActivity.Student student = new RecyclerViewActivity.Student();
             student.setAge(i);

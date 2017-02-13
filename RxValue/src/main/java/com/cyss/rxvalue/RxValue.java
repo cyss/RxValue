@@ -404,11 +404,6 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
         if(!checkInit()) {
             return;
         }
-        Map map = null;
-        if (fillObj instanceof Map) {
-            map = (Map) fillObj;
-        }
-        final Map finalMap = map;
         findView(view).subscribe(new Action1<View>() {
             @Override
             public void call(View v) {
@@ -456,8 +451,14 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
                 hasFieldFlag = true;
             } else {
                 try {
-                    fillObj.getClass().getDeclaredField(name);
-                    hasFieldFlag = true;
+                    if (fillObj instanceof Map) {
+                        Map map = (Map) fillObj;
+                        hasFieldFlag = map.containsKey(name);
+                    } else {
+                        fillObj.getClass().getDeclaredField(name);
+                        hasFieldFlag = true;
+                    }
+
                 } catch (NoSuchFieldException e) {
                 }
             }
