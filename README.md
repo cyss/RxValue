@@ -171,6 +171,33 @@ RxValue.registerGlobalAction(ImageView.class, new CustomFillAction<ImageView>() 
 ```
 Note: If you config global action with ImageView, and also config when fillView/getData. the later will work.
 
+## RecyclerView or ListView
+You can use RxValueList.  
+### Simple Use
+1. First you can register global action in Application onCreate()
+~~~java
+RxValue.registerGlobalAction(RecyclerView.class, RxValueList.create()
+      .withMode(RxValueList.MODE_SIMPLE));
+RxValue.registerGlobalAction(ListView.class, RxValueList.create()
+      .withMode(RxValueList.MODE_SIMPLE));
+~~~  
+2. Fill data in Activity
+~~~java
+rxValue = RxValue.<Classes>create(RecyclerViewActivity.this)
+        .withFillObj(classes);
+rxValueList = (RxValueList) rxValue
+        .getFillAction(RecyclerView.class)
+        // .itemLayout(R.layout.list_item_students); //setting layout item
+        // .addViewClick()      //add click listener with view
+        // .itemClick()         //when click item
+        //if you set your custom adapter, addViewClick(),itemClick(),itemLayout() will not use.
+        //and you must call withMode(RxValueList.CUSTOM))
+        // .withAdapter(...)    
+rxValue.fillViewAsync(RecyclerViewActivity.this);
+~~~
+
+Note: if you don't set itemLayout(...), RxValueList will use `list_item_<RecyclerView/ListView id>` for item's layout.
+
 ## Custom View
 If you know load Image in ImageView well, I think you will know how to do with your custom view.  
 ```java
@@ -203,13 +230,14 @@ rxJava...
 1. EditText
 2. TextView
 3. Button
-4. Continue...
+4. ListView
+5. RecyclerView
+6. coming soon...
 
 ## Next Move
-1. Suport ListView or RecyclerView
-2. Data Validate when getData
-3. Data Binding?
-4. fix bug.
+1. Data Validate when getData
+2. Data Binding?
+3. fix bug.
 
 ## Finally
 Just have fun :)
