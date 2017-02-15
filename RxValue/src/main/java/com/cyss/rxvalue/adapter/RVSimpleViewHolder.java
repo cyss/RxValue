@@ -69,7 +69,7 @@ public class RVSimpleViewHolder<T> extends RecyclerView.ViewHolder {
                             View view = vp.getChildAt(i);
                             if (view instanceof ViewGroup) {
                                 Observable<View> childView = findView(view);
-                                return Observable.from(new View[]{}).concatWith(childView);
+                                return Observable.just(view).concatWith(childView);
                             } else {
                                 return Observable.just(view);
                             }
