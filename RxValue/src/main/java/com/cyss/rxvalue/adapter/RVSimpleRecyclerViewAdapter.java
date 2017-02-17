@@ -59,7 +59,7 @@ public class RVSimpleRecyclerViewAdapter<T> extends RVBaseRecyclerViewAdapter<T,
         RxValueList.OnFillItemViewListener beforeListener = rxValueList.getBeforeFillView();
         if (beforeListener != null) beforeListener.action(holder, position, param);
         holder.rxValue.withFillObj(param).fillView(holder.holderViews.values());
-        RxValueList.OnFillItemViewListener afterListener = rxValueList.getBeforeFillView();
+        RxValueList.OnFillItemViewListener afterListener = rxValueList.getAfterFillView();
         if (afterListener != null) afterListener.action(holder, position, param);
         final RxValueList.OnItemClickListener itemClick = rxValueList.getItemClick();
         if (itemClick != null) {
