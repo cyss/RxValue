@@ -600,8 +600,8 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
                         method = fillObj.getClass().getMethod(toGetMethodName(methodName, true));
                     }
                     obj = method.invoke(fillObj);
-                    if (objDateMap.containsKey(name) && obj instanceof Date) {
-                        String formatStr = objDateMap.get(name);
+                    if (objDateMap.containsKey(methodName) && obj instanceof Date) {
+                        String formatStr = objDateMap.get(methodName);
                         SimpleDateFormat sdf = new SimpleDateFormat(formatStr);
                         obj = sdf.format(obj);
                     }
