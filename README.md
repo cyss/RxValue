@@ -37,7 +37,7 @@ allprojects {
 compile 'io.reactivex:rxandroid:1.2.+'
 compile 'io.reactivex:rxjava:1.2.+'
 //rxvalue
-compile 'com.github.cyss:RxValue:1.0.3'
+compile 'com.github.cyss:RxValue:1.0.7'
 ```
 ## Use RxValue  
 XML Layout  activiy_simple.xml
