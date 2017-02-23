@@ -34,17 +34,7 @@ public class RVSimpleRecyclerViewAdapter<T> extends RVBaseRecyclerViewAdapter<T,
 
     @Override
     public RVSimpleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        int itemLayoutId = -1;
-        if (itemLayout == null || itemLayout.isEmpty()) {
-            if (defaultItemLayoutId == -1) defaultItemLayoutId = rxValueList.getDefaultListItemId();
-            itemLayoutId = defaultItemLayoutId;
-        } else {
-            if (itemLayout.containsKey(viewType)) {
-                itemLayoutId = itemLayout.get(viewType);
-            } else if (itemLayout.containsKey(RxValueList.DEFAULT_ITEM_LAYOUT)){
-                itemLayoutId = itemLayout.get(RxValueList.DEFAULT_ITEM_LAYOUT);
-            }
-        }
+        int itemLayoutId = getItemLayout(viewType);
         if (itemLayoutId == -1) {
             throw new RuntimeException("====>RxValue Error: can't find item layout");
         }
@@ -56,9 +46,11 @@ public class RVSimpleRecyclerViewAdapter<T> extends RVBaseRecyclerViewAdapter<T,
     @Override
     public void onBindViewHolder(final RVSimpleViewHolder holder, final int position) {
         final T param = getDataSource().get(position);
+        int viewType = getItemViewType(position);
         RxValueList.OnFillItemViewListener beforeListener = rxValueList.getBeforeFillView();
         if (beforeListener != null) beforeListener.action(holder, position, param);
-        holder.rxValue.withFillObj(param).fillView(holder.holderViews.values());
+        holder.rxValue.withFillObj(param).layoutId(getItemLayout(viewType));
+        holder.rxValue.fillView(holder.holderViews.values());
         RxValueList.OnFillItemViewListener afterListener = rxValueList.getAfterFillView();
         if (afterListener != null) afterListener.action(holder, position, param);
         final RxValueList.OnItemClickListener itemClick = rxValueList.getItemClick();
@@ -101,6 +93,21 @@ public class RVSimpleRecyclerViewAdapter<T> extends RVBaseRecyclerViewAdapter<T,
 //            return super.getItemCount() + appendCount;
 //        }
         return super.getItemCount();
+    }
+
+    private int getItemLayout(int viewType) {
+        int itemLayoutId = -1;
+        if (itemLayout == null || itemLayout.isEmpty()) {
+            if (defaultItemLayoutId == -1) defaultItemLayoutId = rxValueList.getDefaultListItemId();
+            itemLayoutId = defaultItemLayoutId;
+        } else {
+            if (itemLayout.containsKey(viewType)) {
+                itemLayoutId = itemLayout.get(viewType);
+            } else if (itemLayout.containsKey(RxValueList.DEFAULT_ITEM_LAYOUT)){
+                itemLayoutId = itemLayout.get(RxValueList.DEFAULT_ITEM_LAYOUT);
+            }
+        }
+        return itemLayoutId;
     }
 
 //    private T getData(int position) {

@@ -38,18 +38,7 @@ public class RVSimpleListViewAdapter<T> extends RVBaseListViewAdapter<T> {
     public View getView(final int position, View view, ViewGroup viewGroup) {
         RVSimpleViewHolder viewHolder = null;
         if (view == null) {
-            int itemLayoutId = -1;
-            if (itemLayout == null || itemLayout.isEmpty()) {
-                if (defaultItemLayoutId == -1) defaultItemLayoutId = rxValueList.getDefaultListItemId();
-                itemLayoutId = defaultItemLayoutId;
-            } else {
-                int viewType = getItemViewType(position);
-                if (itemLayout.containsKey(viewType)) {
-                    itemLayoutId = itemLayout.get(viewType);
-                } else if (itemLayout.containsKey(RxValueList.DEFAULT_ITEM_LAYOUT)){
-                    itemLayoutId = itemLayout.get(RxValueList.DEFAULT_ITEM_LAYOUT);
-                }
-            }
+            int itemLayoutId = getItemLayout(position);
             if (itemLayoutId == -1) {
                 throw new RuntimeException("====>RxValue Error: can't find item layout");
             }
@@ -64,7 +53,8 @@ public class RVSimpleListViewAdapter<T> extends RVBaseListViewAdapter<T> {
         final T param = getDataSource().get(position);
         RxValueList.OnFillItemViewListener beforeListener = rxValueList.getBeforeFillView();
         if (beforeListener != null) beforeListener.action(holder, position, param);
-        holder.rxValue.withFillObj(param).fillView(holder.holderViews.values());
+        holder.rxValue.withFillObj(param).layoutId(getItemLayout(position));
+        holder.rxValue.fillView(holder.holderViews.values());
         RxValueList.OnFillItemViewListener afterListener = rxValueList.getBeforeFillView();
         if (afterListener != null) afterListener.action(holder, position, param);
         final RxValueList.OnItemClickListener itemClick = rxValueList.getItemClick();
@@ -100,5 +90,21 @@ public class RVSimpleListViewAdapter<T> extends RVBaseListViewAdapter<T> {
         RxValueList.OnViewTypeListener viewTypeListener = rxValueList.getViewTypeListener();
         if (viewTypeListener != null) return viewTypeListener.viewType(position, param);
         return super.getItemViewType(position);
+    }
+
+    private int getItemLayout(int position) {
+        int itemLayoutId = -1;
+        if (itemLayout == null || itemLayout.isEmpty()) {
+            if (defaultItemLayoutId == -1) defaultItemLayoutId = rxValueList.getDefaultListItemId();
+            itemLayoutId = defaultItemLayoutId;
+        } else {
+            int viewType = getItemViewType(position);
+            if (itemLayout.containsKey(viewType)) {
+                itemLayoutId = itemLayout.get(viewType);
+            } else if (itemLayout.containsKey(RxValueList.DEFAULT_ITEM_LAYOUT)){
+                itemLayoutId = itemLayout.get(RxValueList.DEFAULT_ITEM_LAYOUT);
+            }
+        }
+        return itemLayoutId;
     }
 }
