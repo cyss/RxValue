@@ -529,12 +529,13 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
                             Log.w(this.getClass().getName(), "RxValue Warn:" + name + ":" + param + " can't date format use '" + formatStr + "'");
                         }
                     }
-                    methodName = toSetMethodName(name);
-                    try {
-                        invokeSetMethod(fillObj, findMethod(methodName, fillObj.getClass().getDeclaredMethods()), param);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    setParamToObj(name, param);
+//                    methodName = toSetMethodName(name);
+//                    try {
+//                        invokeSetMethod(fillObj, findMethod(methodName, fillObj.getClass().getDeclaredMethods()), param);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
                 }
             } else {
                 if (objIdNameMap.containsKey(name)) {
@@ -593,19 +594,19 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
                     } else {
                         methodName = name;
                     }
-                    Method method = null;
-                    try {
-                        method = fillObj.getClass().getMethod(toGetMethodName(methodName, false));
-                    } catch (NoSuchMethodException e) {
-                        method = fillObj.getClass().getMethod(toGetMethodName(methodName, true));
-                    }
-                    obj = method.invoke(fillObj);
+//                    Method method = null;
+//                    try {
+//                        method = fillObj.getClass().getMethod(toGetMethodName(methodName, false));
+//                    } catch (NoSuchMethodException e) {
+//                        method = fillObj.getClass().getMethod(toGetMethodName(methodName, true));
+//                    }
+//                    obj = method.invoke(fillObj);
+                    obj = getParamFromObj(methodName);
                     if (objDateMap.containsKey(methodName) && obj instanceof Date) {
                         String formatStr = objDateMap.get(methodName);
                         SimpleDateFormat sdf = new SimpleDateFormat(formatStr);
                         obj = sdf.format(obj);
                     }
-                } catch (NoSuchMethodException e) {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -734,12 +735,57 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
         return fName;
     }
 
-    private String toGetMethodName(String name, boolean isBoolean) {
-        return (isBoolean ? "is" : "get") + name.substring(0, 1).toUpperCase() + name.substring(1);
+//    private String toGetMethodName(String name, boolean isBoolean) {
+//        return (isBoolean ? "is" : "get") + name.substring(0, 1).toUpperCase() + name.substring(1);
+//    }
+//
+//    private String toSetMethodName(String name) {
+//        return "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
+//    }
+
+    private Object getParamFromObj(String name) {
+        Object returnObj = null;
+        try {
+            Field field = fillObj.getClass().getDeclaredField(name);
+            field.setAccessible(true);
+            returnObj = field.get(fillObj);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return returnObj;
     }
 
-    private String toSetMethodName(String name) {
-        return "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
+    private void setParamToObj(String name, Object param) {
+        try {
+            Field field = fillObj.getClass().getDeclaredField(name);
+            field.setAccessible(true);
+            Class c = field.getType();
+            if (c.equals(Integer.class) || "int".equals(c.getName())) {
+                field.set(fillObj, Integer.parseInt(param.toString()));
+            } else if (c.equals(String.class)) {
+                field.set(fillObj, param.toString());
+            } else if (c.equals(Boolean.class) || "boolean".equals(c.getName())) {
+                field.set(fillObj, Boolean.parseBoolean(param.toString()));
+            } else if (c.equals(Long.class) || "long".equals(c.getName())) {
+                field.set(fillObj, Long.parseLong(param.toString()));
+            } else if (c.equals(Float.class) || "float".equals(c.getName())) {
+                field.set(fillObj, Float.parseFloat(param.toString()));
+            } else if (c.equals(Double.class) || "double".equals(c.getName())) {
+                field.set(fillObj, Double.parseDouble(param.toString()));
+            } else if (c.equals(Date.class)) {
+                if (param instanceof Date) {
+                    field.set(fillObj, (Date) param);
+                }
+            } else {
+                field.set(fillObj, param);
+            }
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (Exception e) {}
     }
 
     private CustomFillAction getCustomFillAction(Class<? extends View> clazz) {
@@ -780,14 +826,16 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
 
     private int findIdNameByLayout(int[] idNameValue, int[] layout) {
         int idName = -1;
+        int defaultIdName = -1;
         if (layout.length == idNameValue.length) {
             for (int i = 0; i < layout.length;i++) {
+                if (layout[i] == DEFAULT_LAYOUT) defaultIdName = idNameValue[i];
                 if (layout[i] == layoutId) {
                     idName = idNameValue[i];
                     break;
                 }
             }
         }
-        return idName;
+        return idName == -1 ? defaultIdName : idName;
     }
 }

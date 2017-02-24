@@ -18,6 +18,7 @@ import java.util.Set;
  */
 
 public class RxValueBuilder<T, E extends RxValueBuilder> {
+    protected static final int DEFAULT_LAYOUT = 1;
     protected Context context;
     //填充的数据
     protected T fillObj;
@@ -38,7 +39,7 @@ public class RxValueBuilder<T, E extends RxValueBuilder> {
     protected OnDataError dataError;
     protected OnFillComplete fillComplete;
     protected OnFillError fillError;
-    protected int layoutId = 1;
+    protected int layoutId = DEFAULT_LAYOUT;
 
     protected static Map<String, Integer> layoutMap;
     protected static Map<Integer, String> layoutResMap;
