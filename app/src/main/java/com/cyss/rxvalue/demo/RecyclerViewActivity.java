@@ -85,7 +85,7 @@ public class RecyclerViewActivity extends Activity implements View.OnClickListen
 //                .registerAction(RecyclerView.class, rxValueList)
         rxValue.fillViewAsync(RecyclerViewActivity.this);
         rxValueList = (RxValueList) rxValue.getFillAction(RecyclerView.class);
-        rxValueList.getItemBuilder().registerAction(ImageView.class, new CustomFillAction<ImageView>(){
+        rxValueList.registerAction(ImageView.class, new CustomFillAction<ImageView>(){
 
             @Override
             public void action1(Context context, ImageView view, Object obj, RxValueBuilder builder) {

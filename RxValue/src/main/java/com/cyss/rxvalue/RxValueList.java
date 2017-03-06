@@ -44,13 +44,11 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
     private int listId = -1;
     private OnViewTypeListener viewTypeListener;
     private Map<Integer, Integer> appendCountMap = new HashMap<>();
-    private RxValueBuilder<Object, RxValue> itemBuilder;
 
     private RxValueList() {}
 
     public static RxValueList create() {
         RxValueList rxValueList = new RxValueList();
-        rxValueList.itemBuilder = new RxValueBuilder();
         return rxValueList;
     }
 
@@ -97,10 +95,6 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
     public RxValueList withAdapter(RecyclerView.Adapter adapter) {
         this.adapter = adapter;
         return this;
-    }
-
-    public RxValueBuilder getItemBuilder() {
-        return itemBuilder;
     }
 
     public RxValueList withAdapter(BaseAdapter adapter) {
@@ -189,7 +183,7 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
                     if (!itemLayouts.isEmpty() && !itemLayouts.containsKey(DEFAULT_ITEM_LAYOUT) && viewTypeListener == null) {
                         throw new RuntimeException("You need call viewTypeSetting() to set item's type.");
                     }
-                    adapter = new RVSimpleRecyclerViewAdapter(context, RxValueList.this, itemBuilder, (List)obj);
+                    adapter = new RVSimpleRecyclerViewAdapter(context, RxValueList.this, (List)obj);
                     recyclerView.setAdapter(adapter);
                 }
             } else if (mode == MODE_CUSTOM) {
@@ -204,7 +198,7 @@ public class RxValueList extends RxValueBuilder<List, RxValueList> implements Cu
                     if (!itemLayouts.isEmpty() && !itemLayouts.containsKey(DEFAULT_ITEM_LAYOUT) && viewTypeListener == null) {
                         throw new RuntimeException("You need call viewTypeSetting() to setting.");
                     }
-                    listViewAdapter = new RVSimpleListViewAdapter(context, RxValueList.this, itemBuilder, (List)obj);
+                    listViewAdapter = new RVSimpleListViewAdapter(context, RxValueList.this, (List)obj);
                     listView.setAdapter(listViewAdapter);
                 }
             } else if (mode == MODE_CUSTOM) {

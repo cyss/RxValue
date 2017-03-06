@@ -26,16 +26,10 @@ public class RVSimpleRecyclerViewAdapter<T> extends RVBaseRecyclerViewAdapter<T,
 
     private Map<Integer, Integer> itemLayout;
     private int defaultItemLayoutId = -1;
-    private RxValueBuilder<Object, RxValue> itemBuilder;
 
     public RVSimpleRecyclerViewAdapter(Context context, RxValueList rxValueList, List<T> dataSource) {
-        this(context, rxValueList, null, dataSource);
-    }
-
-    public RVSimpleRecyclerViewAdapter(Context context, RxValueList rxValueList, RxValueBuilder<Object, RxValue> itemBuilder, List<T> dataSource) {
         super(context, dataSource);
         setRxValueList(rxValueList);
-        this.itemBuilder = itemBuilder;
         this.itemLayout = rxValueList.getItemLayouts();
     }
 
@@ -56,7 +50,7 @@ public class RVSimpleRecyclerViewAdapter<T> extends RVBaseRecyclerViewAdapter<T,
         int viewType = getItemViewType(position);
         RxValueList.OnFillItemViewListener beforeListener = rxValueList.getBeforeFillView();
         if (beforeListener != null) beforeListener.action(holder, position, param);
-        holder.rxValue.setBuilder(this.itemBuilder).withFillObj(param).layoutId(getItemLayout(viewType));
+        holder.rxValue.withFillObj(param).layoutId(getItemLayout(viewType));
         holder.rxValue.fillView(holder.holderViews.values());
         RxValueList.OnFillItemViewListener afterListener = rxValueList.getAfterFillView();
         if (afterListener != null) afterListener.action(holder, position, param);

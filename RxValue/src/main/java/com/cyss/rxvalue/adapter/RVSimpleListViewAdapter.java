@@ -27,18 +27,12 @@ public class RVSimpleListViewAdapter<T> extends RVBaseListViewAdapter<T> {
     private Map<Integer, Integer> itemLayout;
     private int defaultItemLayoutId = -1;
     private LayoutInflater mInflater;
-    private RxValueBuilder<Object, RxValue> itemBuilder;
 
     public RVSimpleListViewAdapter(Context context, RxValueList rxValueList, List dataSource) {
-        this(context, rxValueList, null, dataSource);
-    }
-
-    public RVSimpleListViewAdapter(Context context, RxValueList rxValueList, RxValueBuilder<Object, RxValue> itemBuilder,  List dataSource) {
         super(context, dataSource);
         setRxValueList(rxValueList);
         itemLayout = rxValueList.getItemLayouts();
         mInflater = LayoutInflater.from(context);
-        this.itemBuilder = itemBuilder;
     }
 
     @Override
@@ -60,7 +54,7 @@ public class RVSimpleListViewAdapter<T> extends RVBaseListViewAdapter<T> {
         final T param = getDataSource().get(position);
         RxValueList.OnFillItemViewListener beforeListener = rxValueList.getBeforeFillView();
         if (beforeListener != null) beforeListener.action(holder, position, param);
-        holder.rxValue.setBuilder(itemBuilder).withFillObj(param).layoutId(getItemLayout(position));
+        holder.rxValue.withFillObj(param).layoutId(getItemLayout(position));
         holder.rxValue.fillView(holder.holderViews.values());
         RxValueList.OnFillItemViewListener afterListener = rxValueList.getBeforeFillView();
         if (afterListener != null) afterListener.action(holder, position, param);
