@@ -8,16 +8,23 @@ import com.cyss.rxvalue.listener.OnDataError;
 import com.cyss.rxvalue.listener.OnFillComplete;
 import com.cyss.rxvalue.listener.OnFillError;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by chenyang on 2017/2/10.
  */
 
-public class RxValueBuilder<T, E extends RxValueBuilder> {
+public class RxValueBuilder<T, E extends RxValueBuilder> implements Serializable {
     protected static final int DEFAULT_LAYOUT = 1;
     protected Context context;
     //填充的数据
@@ -45,7 +52,17 @@ public class RxValueBuilder<T, E extends RxValueBuilder> {
     protected static Map<Integer, String> layoutResMap;
     protected static Map<String,Integer> idsMap;
     protected static Map<Integer, String> idsResMap;
-    protected static Map<Class<? extends View>, CustomFillAction> globalCustomFillActionMap = new HashMap<>();
+    protected static Map<Class<? extends View>, CustomFillAction> globalCustomFillActionMap = new ConcurrentHashMap<>();
+
+    public static CustomFillAction cloneCustomFillAction(CustomFillAction obj) throws IOException, ClassNotFoundException {
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        ObjectOutputStream oo = new ObjectOutputStream(bo);
+        oo.writeObject(obj);
+
+        ByteArrayInputStream bi=new ByteArrayInputStream(bo.toByteArray());
+        ObjectInputStream oi = new ObjectInputStream(bi);
+        return (CustomFillAction) oi.readObject();
+    }
 
 
     /**
@@ -193,6 +210,7 @@ public class RxValueBuilder<T, E extends RxValueBuilder> {
     }
 
     public E setBuilder(RxValueBuilder builder) {
+        if (builder == null) return (E) this;
         withPrefix(builder.getPrefix());
         withSuffix(builder.getSuffix());
         fillViewType = builder.getFillViewType();
@@ -200,6 +218,14 @@ public class RxValueBuilder<T, E extends RxValueBuilder> {
 
         customFillActionMap.clear();
         customFillActionMap.putAll(globalCustomFillActionMap);
+        for (Map.Entry<Class<? extends View>, CustomFillAction> item : globalCustomFillActionMap.entrySet()) {
+            try {
+                customFillActionMap.put(item.getKey(), cloneCustomFillAction(item.getValue()));
+            } catch (ClassNotFoundException e) {
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         customFillActionMap.putAll(builder.getCustomFillActionMap());
 
         layoutId(builder.getLayoutId());

@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.cyss.rxvalue.annotation.DateConfig;
 import com.cyss.rxvalue.annotation.IdName;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -50,6 +51,13 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
         RxValue<T> rxValue = new RxValue<>(context);
         Map<Class<? extends View>, CustomFillAction> actions = new HashMap<>();
         actions.putAll(globalCustomFillActionMap);
+        for (Map.Entry<Class<? extends View>, CustomFillAction> item : globalCustomFillActionMap.entrySet()) {
+            try {
+                actions.put(item.getKey(), cloneCustomFillAction(item.getValue()));
+            } catch (ClassNotFoundException e) {
+            } catch (IOException e) {
+            }
+        }
         rxValue.registerActions(actions);
         return rxValue;
     }
@@ -750,9 +758,9 @@ public class RxValue<T> extends RxValueBuilder<T, RxValue<T>>{
             field.setAccessible(true);
             returnObj = field.get(fillObj);
         } catch (NoSuchFieldException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return returnObj;
     }

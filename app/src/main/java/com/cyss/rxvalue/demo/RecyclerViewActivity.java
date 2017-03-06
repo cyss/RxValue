@@ -1,13 +1,18 @@
 package com.cyss.rxvalue.demo;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.cyss.rxvalue.CustomFillAction;
+import com.cyss.rxvalue.RxValueBuilder;
 import com.cyss.rxvalue.adapter.RVSimpleViewHolder;
 import com.cyss.rxvalue.annotation.DateConfig;
 import com.cyss.rxvalue.annotation.IdName;
@@ -80,6 +85,18 @@ public class RecyclerViewActivity extends Activity implements View.OnClickListen
 //                .registerAction(RecyclerView.class, rxValueList)
         rxValue.fillViewAsync(RecyclerViewActivity.this);
         rxValueList = (RxValueList) rxValue.getFillAction(RecyclerView.class);
+        rxValueList.getItemBuilder().registerAction(ImageView.class, new CustomFillAction<ImageView>(){
+
+            @Override
+            public void action1(Context context, ImageView view, Object obj, RxValueBuilder builder) {
+                Glide.with(context).load(obj).into(view);
+            }
+
+            @Override
+            public Object action2(Context context, ImageView view, RxValueBuilder builder) {
+                return null;
+            }
+        });
 //        rxValueList.itemLayout(R.layout.activity_simple_use);   //try this
         rxValueList.addViewClick(R.id.save, new RxValueList.OnViewClickListener<Student>() {
 
